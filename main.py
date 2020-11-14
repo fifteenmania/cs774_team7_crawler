@@ -10,12 +10,15 @@ from bs4 import BeautifulSoup as bs
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 
-# PHANTOMJS_PATH = './phantomjs-2.1.1-windows/bin/phantomjs.exe'
 CHROMIUM_PATH = './chromedriver.exe'
 
 base_url  = 'https://www.gapminder.org/dollar-street/'
-topics = ['arm-watches', 'armchairs', 'beds', 'bikes', 'bowls', 'cups']
+#topics = ['arm-watches', 'armchairs', 'beds', 'bikes', 'bowls', 'cups']
+topics = ['arm-watches']
 save_dir = './img/'
+
+# maximum number of images in one category (to prevent mem overflow)
+MAX_NUM = 60
 
 def urlopen_chrome(url): 
     try: 
@@ -44,26 +47,44 @@ for topic in topics:
     if not os.path.isdir(path):
         os.mkdir(path)
 
-# crawl data
 for topic in topics:
     url = base_url + '?topic=' + topic + '&media=image'
     images = []
+    incomes = []
+    countries = []
+    # crawl image sources and data
     with js_execute(url) as client:
-        for i in range(1, 30):
+        for i in range(1, MAX_NUM):
             try:
                 img_obj = client.find_element_by_xpath('/html/body/div[2]/main/div[1]/div[1]/div['+str(i)+']/a[1]/div[1]/div[2]/div[1]/img')
                 img_source = img_obj.get_attribute('src')
-                images.append(img_source)
-                # print('added ' + img_source)
+                
+                img_income_obj = client.find_element_by_xpath('/html/body/div[2]/main/div[1]/div[1]/div['+str(i)+']/a[1]/div[1]/div[1]/span[1]')
+                img_income = img_income_obj.get_attribute('innerHTML')
+
+                img_country_obj = client.find_element_by_xpath('/html/body/div[2]/main/div[1]/div[1]/div['+str(i)+']/a[1]/div[1]/div[1]/span[2]')
+                img_country = img_country_obj.get_attribute('innerHTML')
             except NoSuchElementException as e:
-                pass
+                break
+            images.append(img_source)
+            incomes.append(img_income)
+            countries.append(img_country)
     print('Category crawl complete : ' + topic)
+    print(incomes)
+    # save label (file_name income country)
+    with open(save_dir + topic + '/' + 'label.txt', 'w') as label:
+        for i in range(len(images)):
+            label.write(images[i] + ' ')
+            label.write(incomes[i] + ' ')
+            label.write(countries[i] + '\n')
+    # save images
     for img_num in range(len(images)):
         img_url = images[img_num]
         with urlopen_chrome(img_url) as f:
             with open(save_dir + topic + '/' + str(img_num) + '.jpg', 'wb') as h:
                 img_file = f.read()
                 h.write(img_file)
+    print('Category save complete : ' + topic)
 
 
 
