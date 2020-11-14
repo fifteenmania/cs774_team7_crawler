@@ -1,5 +1,4 @@
 img/*
 .vscode
-chromedriver.exe
 phantomjs-2.1.1-windows/*
 ghostdriver.log
