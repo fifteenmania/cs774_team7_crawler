@@ -13,8 +13,8 @@ from selenium.common.exceptions import NoSuchElementException
 CHROMIUM_PATH = './chromedriver.exe'
 
 base_url  = 'https://www.gapminder.org/dollar-street/'
-#topics = ['arm-watches', 'armchairs', 'beds', 'bikes', 'bowls', 'cups']
-topics = ['arm-watches']
+#topics = ['armchairs', 'beds', 'bikes', 'bowls', 'cars']
+topics = ['living-rooms', 'beds', 'guest-beds', 'bathrooms', 'kitchens', 'child-rooms', 'sofas', 'bedrooms', 'wall-clocks', 'stoves']
 save_dir = './img/'
 
 # maximum number of images in one category (to prevent mem overflow)
@@ -74,7 +74,7 @@ for topic in topics:
     # save label (file_name income country)
     with open(save_dir + topic + '/' + 'label.txt', 'w') as label:
         for i in range(len(images)):
-            label.write(images[i] + ' ')
+            label.write(str(i) + '.jpg ')
             label.write(incomes[i] + ' ')
             label.write(countries[i] + '\n')
     # save images
