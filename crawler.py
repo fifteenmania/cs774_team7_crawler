@@ -1,5 +1,6 @@
 import os
 import time
+import shutil
 
 import urllib
 import urllib.request
@@ -9,12 +10,18 @@ from urllib.parse import quote_plus
 from bs4 import BeautifulSoup as bs
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver import ActionChains
+
+from topics_table import topics_table
 
 CHROMIUM_PATH = './chromedriver.exe'
 
 base_url  = 'https://www.gapminder.org/dollar-street/'
+
 #topics = ['armchairs', 'beds', 'bikes', 'bowls', 'cars']
-topics = ['living-rooms', 'beds', 'guest-beds', 'bathrooms', 'kitchens', 'child-rooms', 'sofas', 'bedrooms', 'wall-clocks', 'stoves']
+#topics = ['living-rooms', 'beds', 'guest-beds', 'bathrooms', 'kitchens', 'child-rooms', 'sofas', 'bedrooms', 'wall-clocks', 'stoves']
+topics = ['radios']
+#topics = topics_table.keys()
 save_dir = './img/'
 
 # maximum number of images in one category (to prevent mem overflow)
@@ -46,6 +53,9 @@ for topic in topics:
     path = save_dir + topic
     if not os.path.isdir(path):
         os.mkdir(path)
+    else:
+        shutil.rmtree(path)
+        os.mkdir(path)
 
 for topic in topics:
     url = base_url + '?topic=' + topic + '&media=image'
@@ -54,8 +64,10 @@ for topic in topics:
     countries = []
     # crawl image sources and data
     with js_execute(url) as client:
+        #action = ActionChains(client)
         for i in range(1, MAX_NUM):
             try:
+                #time.sleep(0.1)
                 img_obj = client.find_element_by_xpath('/html/body/div[2]/main/div[1]/div[1]/div['+str(i)+']/a[1]/div[1]/div[2]/div[1]/img')
                 img_source = img_obj.get_attribute('src')
                 
@@ -64,6 +76,8 @@ for topic in topics:
 
                 img_country_obj = client.find_element_by_xpath('/html/body/div[2]/main/div[1]/div[1]/div['+str(i)+']/a[1]/div[1]/div[1]/span[2]')
                 img_country = img_country_obj.get_attribute('innerHTML')
+                
+                #action.move_to_element(img_obj).perform()
             except NoSuchElementException as e:
                 break
             images.append(img_source)
